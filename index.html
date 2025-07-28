@@ -24,7 +24,7 @@
   <!-- Title and Language Toggle -->
   <h2 id="pageTitle">GCU - Gvolta 出力電流計算機</h2>
   <div class="lang-buttons">
-    <button onclick="switchLang('en')">EN</button>
+    <button onclick="switchLang('en')">ENG</button>
     <button onclick="switchLang('jp')">日本語</button>
   </div>
 
@@ -35,6 +35,7 @@
       <button onclick="selectCharger(this, 21, 0.81)">21 kW</button>
       <button onclick="selectCharger(this, 13, 0.79)">13 kW</button>
       <button onclick="selectCharger(this, 10, 0.78)">10 kW</button>
+      <button onclick="selectCharger(this, 30, 0.81)">30 kW</button>
       <button onclick="selectCharger(this, 'custom')" data-i18n="custom">カスタム</button>
       <input type="number" id="customKW" placeholder="xx kW" step="0.1" style="display:none;">
       <input type="number" id="customEff" placeholder="Efficiency (%)" step="0.01" style="display:none;">
@@ -67,6 +68,18 @@
     <span class="note" data-i18n="currentNote">注: 1.0〜200.0 A の値を入力可能</span>
   </fieldset>
 
+  <!-- DC Voltage Selection -->
+  <fieldset>
+    <legend data-i18n="dcVoltage">DC出力電圧を選択してください</legend>
+    <div class="button-group" id="dcVoltButtons">
+      <button onclick="selectDCVolt(this, 66)">66 V</button>
+      <button onclick="selectDCVolt(this, 124)">124 V</button>
+      <button onclick="selectDCVolt(this, 'custom')" data-i18n="custom">カスタム</button>
+      <input type="number" id="customDCVolt" placeholder="xx V" min="12" max="1000" style="display:none;">
+    </div>
+    <span class="note" data-i18n="dcVoltNote">注: 12〜1000 V の範囲で入力可能</span>
+  </fieldset>
+
   <!-- Calculate Button -->
   <button onclick="calculateOutput()" id="calcBtn">出力電流を計算</button>
 
@@ -80,6 +93,7 @@
     let chargerEff = null;
     let voltage = null;
     let current = null;
+    let dcVoltage = 66;
 
     // Default language set to Japanese
     document.addEventListener("DOMContentLoaded", () => switchLang('jp'));
@@ -95,6 +109,8 @@
         'breakerRating': { en: "Enter the 3-phase breaker rating (In Amps)", jp: "3相ブレーカ定格を入力してください (A単位)" },
         'currentNote': { en: "Note: Accepts values from 1.0 to 200.0 A", jp: "注: 1.0〜200.0 A の値を入力可能" },
         'calcBtn': { en: "Calculate Output Current", jp: "出力電流を計算" },
+        'dcVoltage': { en: "Select DC Output Voltage", jp: "DC出力電圧を選択してください" },
+        'dcVoltNote': { en: "Note: Acceptable range is 12 to 1000 V", jp: "注: 12〜1000 V の範囲で入力可能" },
       };
       for (const key in textMap) {
         const el = document.querySelector(`[data-i18n="${key}"]`);
@@ -132,6 +148,13 @@
       document.getElementById("customAmp").style.display = (val === 'custom') ? 'inline-block' : 'none';
     }
 
+    function selectDCVolt(el, val) {
+      clearActive("dcVoltButtons");
+      el.classList.add("active");
+      dcVoltage = val;
+      document.getElementById("customDCVolt").style.display = (val === 'custom') ? 'inline-block' : 'none';
+    }
+
     function clearActive(groupId) {
       const btns = document.getElementById(groupId).getElementsByTagName("button");
       for (let b of btns) b.classList.remove("active");
@@ -142,8 +165,9 @@
       let eff = (chargerKW === 'custom') ? parseFloat(document.getElementById("customEff").value) / 100 : chargerEff;
       let volt = (voltage === 'custom') ? parseFloat(document.getElementById("customVolt").value) : voltage;
       let curr = (current === 'custom') ? parseFloat(document.getElementById("customAmp").value) : current;
+      let dcVoltVal = (dcVoltage === 'custom') ? parseInt(document.getElementById("customDCVolt").value) : dcVoltage;
 
-      if (!kw || !eff || !volt || !curr || kw <= 0 || eff <= 0 || volt <= 0 || curr <= 0) {
+      if (!kw || !eff || !volt || !curr || !dcVoltVal || kw <= 0 || eff <= 0 || volt <= 0 || curr <= 0 || dcVoltVal < 12 || dcVoltVal > 1000) {
         document.getElementById("result").innerText = "全ての値を正しく入力してください。";
         return;
       }
@@ -151,15 +175,15 @@
       const powerFactor = 0.8;
       let inputPower = Math.sqrt(3) * volt * curr * powerFactor;
       let outputPower = inputPower * eff;
-      let outputCurrent = outputPower / 66;
+      let outputCurrent = outputPower / dcVoltVal;
 
-      document.getElementById("result").innerText = `66Vでの推定GC出力電流: ${outputCurrent.toFixed(2)} Amps`;
+      document.getElementById("result").innerText = `${dcVoltVal}Vでの推定GC出力電流: ${outputCurrent.toFixed(2)} Amps`;
 
       document.getElementById("calculationReference").innerHTML = `
         <strong>計算参照:</strong><br>
         入力電力 = √3 × ${volt} × ${curr} × ${powerFactor} = ${inputPower.toFixed(2)} W<br>
         出力電力 = 入力電力 × 効率 (${(eff * 100).toFixed(1)}%) = ${outputPower.toFixed(2)} W<br>
-        出力電流 = 出力電力 / 66 = ${outputCurrent.toFixed(2)} A
+        出力電流 = 出力電力 / ${dcVoltVal} = ${outputCurrent.toFixed(2)} A
       `;
     }
   </script>
