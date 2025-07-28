@@ -68,9 +68,9 @@
     <span class="note" data-i18n="currentNote">注: 1.0〜200.0 A の値を入力可能</span>
   </fieldset>
 
-  <!-- DC Voltage Selection -->
+  <!-- GC Voltage Selection -->
   <fieldset>
-    <legend data-i18n="dcVoltage">DC出力電圧を選択してください</legend>
+    <legend data-i18n="dcVoltage">GC出力電圧を選択してください</legend>
     <div class="button-group" id="dcVoltButtons">
       <button onclick="selectDCVolt(this, 66)">66 V</button>
       <button onclick="selectDCVolt(this, 124)">124 V</button>
@@ -109,7 +109,7 @@
         'breakerRating': { en: "Enter the 3-phase breaker rating (In Amps)", jp: "3相ブレーカ定格を入力してください (A単位)" },
         'currentNote': { en: "Note: Accepts values from 1.0 to 200.0 A", jp: "注: 1.0〜200.0 A の値を入力可能" },
         'calcBtn': { en: "Calculate Output Current", jp: "出力電流を計算" },
-        'dcVoltage': { en: "Select DC Output Voltage", jp: "DC出力電圧を選択してください" },
+        'dcVoltage': { en: "Select GC Output Voltage", jp: "GC出力電圧を選択してください" },
         'dcVoltNote': { en: "Note: Acceptable range is 12 to 1000 V", jp: "注: 12〜1000 V の範囲で入力可能" },
       };
       for (const key in textMap) {
